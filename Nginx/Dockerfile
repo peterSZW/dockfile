@@ -1,20 +1,20 @@
-#
-# Nginx Dockerfile
-#
-# https://github.com/dockerfile/nginx
-#
-
 # Pull base image.
-FROM dockerfile/ubuntu
+FROM centos
 
 # Install Nginx.
 RUN \
-  add-apt-repository -y ppa:nginx/stable && \
-  apt-get update && \
-  apt-get install -y nginx && \
-  rm -rf /var/lib/apt/lists/* && \
-  echo "\ndaemon off;" >> /etc/nginx/nginx.conf && \
-  chown -R www-data:www-data /var/lib/nginx
+  yum install readline-devel pcre-devel openssl-devel gcc -y
+RUN \
+  echo "[openresty]" > /etc/yum.repos.d/OpenResty.repo && \
+  echo "name=Official OpenResty Repository" >> /etc/yum.repos.d/OpenResty.repo && \
+  echo "baseurl=https://copr-be.cloud.fedoraproject.org/results/openresty/openresty/epel-7-x86_64/" >> /etc/yum.repos.d/OpenResty.repo && \
+  echo "skip_if_unavailable=True" >> /etc/yum.repos.d/OpenResty.repo && \
+  echo "gpgcheck=1" >> /etc/yum.repos.d/OpenResty.repo && \
+  echo "gpgkey=https://copr-be.cloud.fedoraproject.org/results/openresty/openresty/pubkey.gpg" >> /etc/yum.repos.d/OpenResty.repo && \
+  echo "enabled=1" >> /etc/yum.repos.d/OpenResty.repo && \
+  echo "enabled_metadata=1" >> /etc/yum.repos.d/OpenResty.repo && \
+  cat /etc/yum.repos.d/OpenResty.repo && \
+  yum install openresty -y
 
 # Define mountable directories.
 VOLUME ["/etc/nginx/sites-enabled", "/etc/nginx/certs", "/etc/nginx/conf.d", "/var/log/nginx", "/var/www/html"]
@@ -23,7 +23,7 @@ VOLUME ["/etc/nginx/sites-enabled", "/etc/nginx/certs", "/etc/nginx/conf.d", "/v
 WORKDIR /etc/nginx
 
 # Define default command.
-CMD ["nginx"]
+CMD ["openresty"]
 
 # Expose ports.
 EXPOSE 80
